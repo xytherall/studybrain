@@ -70,10 +70,8 @@ export default function UploadPage() {
       if (insertError || !row) throw new Error(insertError?.message ?? "Could not save the file");
 
       setStatus("Reading the questions with AI. This can take a minute for long papers...");
-      const res = await fetch("/api/extract", { method: "POST", body: JSON.stringify({ fileId: row.id }) });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Extraction failed");
-
+      // Open the paper even if reading fails: it shows the stored error and a "Try reading again" button.
+      await fetch("/api/extract", { method: "POST", body: JSON.stringify({ fileId: row.id }) }).catch(() => null);
       router.push(`/papers/${row.id}`);
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Something went wrong");
