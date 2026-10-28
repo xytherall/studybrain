@@ -34,6 +34,9 @@ function LoginForm() {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) setMessage(error.message);
+      // Supabase returns a user with no identities when the email is already registered.
+      else if (data.user && data.user.identities?.length === 0)
+        setMessage("An account with this email already exists. Try logging in.");
       else if (!data.session) setMessage(
           "Check your email for a link to confirm your account. No email? For testing you can turn off Confirm email in Supabase > Authentication > Sign In / Providers > Email.",
         );
