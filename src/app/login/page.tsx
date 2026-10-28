@@ -1,13 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [supabase] = useState(createClient);
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(searchParams.get("mode") === "signup" ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -25,7 +34,9 @@ export default function LoginPage() {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) setMessage(error.message);
-      else if (!data.session) setMessage("Check your email for a link to confirm your account.");
+      else if (!data.session) setMessage(
+          "Check your email for a link to confirm your account. No email? For testing you can turn off Confirm email in Supabase > Authentication > Sign In / Providers > Email.",
+        );
       else router.push("/onboarding");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,6 +59,15 @@ export default function LoginPage() {
     <div className="mx-auto max-w-sm space-y-6 py-6">
       <h1 className="text-2xl font-bold">{mode === "login" ? "Log in" : "Create your account"}</h1>
 
+      <div className="flex gap-2">
+        <button type="button" className={`${mode === "login" ? "btn" : "btn-secondary"} flex-1`} onClick={() => setMode("login")}>
+          Log in
+        </button>
+        <button type="button" className={`${mode === "signup" ? "btn" : "btn-secondary"} flex-1`} onClick={() => setMode("signup")}>
+          Sign up
+        </button>
+      </div>
+
       <button onClick={google} className="btn-secondary w-full">
         Continue with Google
       </button>
@@ -69,13 +89,6 @@ export default function LoginPage() {
       </form>
 
       {message && <p className="text-sm text-slate-700">{message}</p>}
-
-      <p className="text-center text-sm text-slate-600">
-        {mode === "login" ? "New here? " : "Already have an account? "}
-        <button className="text-blue-600" onClick={() => setMode(mode === "login" ? "signup" : "login")}>
-          {mode === "login" ? "Create an account" : "Log in"}
-        </button>
-      </p>
     </div>
   );
 }

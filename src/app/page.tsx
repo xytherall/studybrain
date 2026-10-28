@@ -15,7 +15,7 @@ export default async function Landing() {
       <p className="text-slate-600">
         Upload your test papers, log every mistake and why it happened, and see which topics cost you the most.
       </p>
-      <Link href="/login" className="btn">
+      <Link href="/login?mode=signup" className="btn">
         Get started
       </Link>
     </div>
